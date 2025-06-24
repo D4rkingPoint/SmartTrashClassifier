@@ -5,3 +5,12 @@ Proyecto_IPD441
 - Leonardo Antonio Ponce Toledo         UTFSM   leonardo.ponce@ums.cl
 - Álvaro Alejandro Pozo Fuentes         UTFSM   alvaro.pozo@usm.cl
 - Nicolás Benjamín Ramírez Rodríguez    UTFSM   nicolas.ramirezro@usm.cl
+
+## Métricas a comparar:
+
+- mAP (mean Average Precision)
+
+- Precision
+- Recall
+- F1-Score
+- FPS (cuadros por segundo) para ver cuál es más rápido en inferencia
