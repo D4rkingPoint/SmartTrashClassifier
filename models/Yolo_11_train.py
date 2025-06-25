@@ -16,7 +16,7 @@ if not os.path.exists(DATASET_PATH):
     rf = Roboflow(api_key="RdgAUhTbcOD8jUWNIy9A")
     project = rf.workspace("proyectos-qu6sq").project("dataset-para-proyecto-vision")
     version = project.version(2)
-    dataset = version.download("yolov11")                           
+    dataset = version.download("yolov11", location=DATASET_PATH)                           
     dataset_path = dataset.location  # <-- Definimos la ruta cuando se descarga
 else:
     print(f"El dataset '{DATASET_NAME}' ya está disponible, no se descarga nuevamente.")
@@ -25,6 +25,7 @@ else:
 # Volver al directorio principal
 os.chdir(HOME)
 
+train_path = "runs"
 # Entrenamiento usando subprocess y CLI
 
 import subprocess
@@ -38,6 +39,6 @@ subprocess.run([
     "epochs=30",
     "imgsz=640",
     "device=0",
-    "plots=True"
-    f"project=Entrenamiento_yolov11",  # Cambia esto por el nombre deseado
+    "plots=True",
+    f"project={train_path}/Entrenamiento_yolov11",  # Cambia esto por el nombre deseado
 ])
