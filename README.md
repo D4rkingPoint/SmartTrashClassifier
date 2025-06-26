@@ -25,3 +25,17 @@ Proyecto_IPD441
 - Recall
 - F1-Score
 - FPS (cuadros por segundo) para ver cuál es más rápido en inferencia
+
+## Instalaciones necesarias
+
+### Yolo
+
+
+### Fastet R-CNN
+
+
+### MobileNet SSD
+
+
+### EfficientDet
+
