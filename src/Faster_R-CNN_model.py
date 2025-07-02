@@ -59,6 +59,9 @@ def draw_predictions(frame, outputs, threshold=0.5):
 # ================================
 # LOOP PRINCIPAL
 # ================================
+# ================================
+# LOOP PRINCIPAL (CORREGIDO)
+# ================================
 def run_camera(model):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -72,14 +75,30 @@ def run_camera(model):
             print("❌ No se pudo leer el frame.")
             break
 
-        orig = frame.copy()
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        input_tensor = preprocess(rgb)
+        # Guardamos las dimensiones originales del frame
+        orig_h, orig_w, _ = frame.shape
+        
+        # Preprocesamos la imagen para el modelo
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        input_tensor = preprocess(rgb_frame)
 
         with torch.no_grad():
-            outputs = model(input_tensor)[0]  # output es un dict: boxes, labels, scores
+            outputs = model(input_tensor)[0]
 
-        result_frame = draw_predictions(orig, outputs, threshold=0.5)
+        # --- AQUÍ ESTÁ LA CORRECCIÓN ---
+        # Escalamos las coordenadas de las cajas al tamaño original del frame
+        
+        # Calculamos los factores de escala
+        x_scale = orig_w / image_size
+        y_scale = orig_h / image_size
+
+        # Obtenemos las cajas y las escalamos
+        boxes = outputs['boxes']
+        boxes[:, [0, 2]] *= x_scale  # Escala las coordenadas X (x1, x2)
+        boxes[:, [1, 3]] *= y_scale  # Escala las coordenadas Y (y1, y2)
+        
+        # Dibujamos las predicciones en el frame original usando las cajas ya escaladas
+        result_frame = draw_predictions(frame, outputs, threshold=0.5)
 
         cv2.imshow("Faster R-CNN - Webcam", result_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):

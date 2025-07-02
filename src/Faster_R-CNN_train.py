@@ -82,28 +82,30 @@ for cat_id in cat_ids:
 # DATASET CLASS
 # ================================
 class COCODetectionDataset(Dataset):
-    def __init__(self, img_dir, ann_path, transforms=None, verbose_errors=False):  # Added verbose_errors parameter here
+    def __init__(self, img_dir, ann_path, transforms=None, verbose_errors=False):
         self.img_dir = img_dir
         self.coco = COCO(ann_path)
         self.ids = list(sorted(self.coco.imgs.keys()))
         self.transforms = transforms
-        self.verbose_errors = verbose_errors  # Store the parameter
+        self.verbose_errors = verbose_errors
         
-        # Mapeo especial para manejar el ID 0
-        self.cat_ids = sorted(self.coco.getCatIds())
-        print(f"Categorías originales en COCO: {self.cat_ids}")
-        
-        # Asegurar que ningún ID sea menor que 1
-        self.class_map = {v: i+1 for i, v in enumerate(self.cat_ids) if v >= 1}
-        
-        # Manejo especial para ID 0 (si existe)
-        if 0 in self.cat_ids:
-            print("¡Advertencia: Se encontró categoría con ID 0! Mapeando a 1")
-            self.class_map[0] = 1  # Asignamos a la primera clase
-        
-        print(f"Mapa de clases final: {self.class_map}")
-            
+        # Obtenemos los IDs de las categorías del archivo COCO
+        coco_cat_ids = sorted(self.coco.getCatIds())
+        print(f"Categorías originales en COCO: {coco_cat_ids}")
 
+        # 1. Filtramos para quedarnos solo con los IDs de clase válidos (mayores que 0)
+        valid_cat_ids = [cat_id for cat_id in coco_cat_ids if cat_id > 0]
+        
+        # 2. Creamos el mapa a partir de la lista ya filtrada y limpia.
+        #    Esto asegura que la enumeración empiece desde i=0 para la clase 1.
+        self.class_map = {v: i+1 for i, v in enumerate(valid_cat_ids)}
+        
+        print(f"IDs de categoría válidos utilizados: {valid_cat_ids}")
+        print(f"Mapa de clases final (ID_original -> nuevo_ID): {self.class_map}")
+        
+        if len(self.class_map) != num_classes:
+            print(f"¡ADVERTENCIA! El número de clases mapeadas ({len(self.class_map)}) no coincide con num_classes ({num_classes}).")
+            
     def __len__(self):
         return len(self.ids)
 
@@ -128,6 +130,10 @@ class COCODetectionDataset(Dataset):
             labels = []
 
             for ann in anns:
+                # IGNORAMOS cualquier anotación con category_id 0 o que no esté en nuestro mapa
+                if ann['category_id'] not in self.class_map:
+                    continue
+
                 x, y, w_ann, h_ann = ann['bbox']
                 xmin = max(0, x)
                 ymin = max(0, y)
@@ -135,35 +141,22 @@ class COCODetectionDataset(Dataset):
                 ymax = min(h, y + h_ann)
                 
                 if xmax > xmin and ymax > ymin:
+                    # Usamos el mapa para obtener la etiqueta correcta (de 1 a 7)
                     label = self.class_map[ann['category_id']]
-                    if label < 1 or label > num_classes:
-                        raise ValueError(f"Label {label} fuera de rango (1-{num_classes})")
                     
                     boxes.append([xmin, ymin, xmax, ymax])
                     labels.append(label)
-                
-                # Verificación crítica
-                if len(boxes) != len(labels):
-                    raise ValueError(f"Discrepancia en {img_path}: {len(boxes)} boxes vs {len(labels)} labels")
-
-            # Verificar que boxes y labels coincidan
-            if len(boxes) != len(labels):
-                if self.verbose_errors:
-                    print(f"Mismatch in image {img_path}: {len(boxes)} boxes vs {len(labels)} labels")
-                # Si hay mismatch, usar solo las primeras n coincidencias
-                n = min(len(boxes), len(labels))
-                boxes = boxes[:n]
-                labels = labels[:n]
 
             if len(boxes) == 0:
-                img = torch.zeros((3, image_size, image_size), dtype=torch.float32)
-                boxes = torch.zeros((0, 4), dtype=torch.float32)
-                labels = torch.zeros((0,), dtype=torch.int64)
-            else:
-                transformed = self.transforms(image=img, bboxes=boxes, class_labels=labels)
-                img = transformed['image']
-                boxes = torch.as_tensor(transformed['bboxes'], dtype=torch.float32)
-                labels = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)
+                # Si una imagen se queda sin anotaciones válidas, la tratamos como fondo
+                img, target = self._create_dummy_sample()
+                target["image_id"] = torch.tensor([img_id]) # Usamos el ID de imagen real
+                return img, target
+            
+            transformed = self.transforms(image=img, bboxes=boxes, class_labels=labels)
+            img = transformed['image']
+            boxes = torch.as_tensor(transformed['bboxes'], dtype=torch.float32)
+            labels = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)
 
             target = {
                 "boxes": boxes,
@@ -176,22 +169,21 @@ class COCODetectionDataset(Dataset):
             return img, target
 
         except Exception as e:
-            print(f"Error procesando imagen: {str(e)}")
+            if self.verbose_errors:
+                print(f"Error procesando imagen ID {self.ids[index]}: {str(e)}")
             return self._create_dummy_sample()
         
     def _create_dummy_sample(self):
         """Crea una muestra dummy para mantener el entrenamiento"""
         img = torch.zeros((3, image_size, image_size), dtype=torch.float32)
-        boxes = torch.zeros((0, 4), dtype=torch.float32)
-        labels = torch.zeros((0,), dtype=torch.int64)
-        return img, {
-            "boxes": boxes,
-            "labels": labels,
-            "image_id": torch.tensor([0]),
+        target = {
+            "boxes": torch.zeros((0, 4), dtype=torch.float32),
+            "labels": torch.zeros((0,), dtype=torch.int64),
+            "image_id": torch.tensor([0]), # ID genérico para muestras dummy
             "area": torch.zeros((0,), dtype=torch.float32),
             "iscrowd": torch.zeros((0,), dtype=torch.int64)
         }
-
+        return img, target
 # ================================
 # LIGHTNING MODULE
 # ================================
