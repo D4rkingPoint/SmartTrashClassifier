@@ -39,3 +39,4 @@ Proyecto_IPD441
 
 ### EfficientDet
 
+- pip install torch torchvision effdet albumentations pytorch-lightning

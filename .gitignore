@@ -3,3 +3,9 @@ dataset/
 
 # archivos .pt
 *.pt
+
+lightning_logs/
+
+instalaciones/
+
+*.pth

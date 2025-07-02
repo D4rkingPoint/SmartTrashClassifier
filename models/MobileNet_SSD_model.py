@@ -7,10 +7,10 @@ from tensorflow.keras.models import load_model
 # Configuración (debe coincidir con el entrenamiento)
 HOME = os.getcwd()
 MODEL_DIR = os.path.join(HOME, "model_mobilenet")
-MODEL_PATH = os.path.join(MODEL_DIR, "best_ssd.keras")  # o "ssd_mobilenet_final.keras"
+MODEL_PATH = os.path.join(MODEL_DIR, "ssd_mobilenet_final.keras")  # o "ssd_mobilenet_final.keras"
 CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'trash', 'compostable']
 IMG_SIZE = 300
-CONFIDENCE_THRESHOLD = 0.5  # Umbral de confianza para mostrar detecciones
+CONFIDENCE_THRESHOLD = 0.95 # Umbral de confianza para mostrar detecciones
 
 # Cargar el modelo entrenado
 print("Cargando modelo...")

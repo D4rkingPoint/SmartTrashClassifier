@@ -24,11 +24,10 @@ DATASET_PATH = os.path.join(DATASET_DIR, DATASET_NAME)
 os.makedirs(DATASET_DIR, exist_ok=True)
 os.chdir(DATASET_DIR)
 
-
 if not os.path.exists(DATASET_PATH):
     rf = Roboflow(api_key="RdgAUhTbcOD8jUWNIy9A")
     project = rf.workspace("proyectos-qu6sq").project("dataset-para-proyecto-vision")
-    version = project.version(3)
+    version = project.version(2)
     dataset = version.download("coco", location=DATASET_PATH)
     dataset_path = dataset.location
 else:

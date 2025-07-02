@@ -33,7 +33,7 @@ else:
 
 
 # ====================== CONFIGURACIÓN ======================
-CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'trash', 'compostable']
+CLASSES = ['Trash', 'Metal', 'Plastic', 'Glass', 'Cardboard', 'Paper', 'Compostable']
 IMG_SIZE = 300
 BATCH_SIZE = 32
 EPOCHS = 20
