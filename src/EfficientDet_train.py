@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 # ================================
 HOME = os.getcwd()
 DATASET_DIR = os.path.join(HOME, "dataset")
-DATASET_NAME = "dataset-para-proyecto-vision-efficientdet"
+DATASET_NAME = "dataset-para-proyecto-vision-Efficientdet"
 DATASET_PATH = os.path.join(DATASET_DIR, DATASET_NAME)
 
 os.makedirs(DATASET_DIR, exist_ok=True)
@@ -76,74 +76,84 @@ class COCODetectionDataset(Dataset):
         self.coco = COCO(ann_path)
         self.ids = list(sorted(self.coco.imgs.keys()))
         self.transforms = transforms
+        
+        # Creamos un mapa para asegurar que usamos las clases correctas
+        # Mapeamos los IDs de COCO [1, 2, ..., 7] a los índices del modelo [0, 1, ..., 6]
+        coco_cat_ids = sorted(self.coco.getCatIds())
+        self.class_map = {cat_id: i for i, cat_id in enumerate(c for c in coco_cat_ids if c > 0)}
+        #print(f"Mapeo de clases creado (ID_COCO -> ID_Modelo): {self.class_map}")
+
 
     def __len__(self):
         return len(self.ids)
 
     def __getitem__(self, index):
+        img_id = self.ids[index]
         try:
-            img_id = self.ids[index]
             ann_ids = self.coco.getAnnIds(imgIds=img_id)
             anns = self.coco.loadAnns(ann_ids)
 
             img_info = self.coco.loadImgs(img_id)[0]
             path = img_info['file_name']
             img_path = os.path.join(self.img_dir, path)
-            
-            # Verify image exists and can be read
-            if not os.path.exists(img_path):
-                raise FileNotFoundError(f"Image not found: {img_path}")
-                
+
             img = cv2.imread(img_path)
             if img is None:
-                raise ValueError(f"Could not read image: {img_path}")
-                
+                raise ValueError(f"No se pudo leer la imagen: {img_path}")
+            
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            h, w, _ = img.shape
 
             boxes = []
             labels = []
 
             for ann in anns:
-                x, y, w, h = ann['bbox']
+                # Ignoramos las anotaciones que no están en nuestro mapa (ej: categoría 0)
+                if ann['category_id'] not in self.class_map:
+                    continue
+                
+                x, y, w_bbox, h_bbox = ann['bbox']
                 xmin = max(0, x)
                 ymin = max(0, y)
-                xmax = min(w, x + w)
-                ymax = min(h, y + h)
-                
-                # Ensure boxes are valid and have positive area
+                xmax = min(img.shape[1], x + w_bbox)
+                ymax = min(img.shape[0], y + h_bbox)
+
                 if xmax > xmin and ymax > ymin:
                     boxes.append([xmin, ymin, xmax, ymax])
-                    # Ensure class labels are within bounds (0 to num_classes-1)
-                    label = ann['category_id']
-                    if label < 0 or label >= num_classes:
-                        raise ValueError(f"Invalid class label {label} in {img_path}")
-                    labels.append(label)
+                    # Usamos el mapa para obtener la etiqueta correcta (0 a 6)
+                    labels.append(self.class_map[ann['category_id']])
 
-            # If no valid boxes, return empty tensors
-            if len(boxes) == 0:
-                img = torch.zeros((3, image_size, image_size), dtype=torch.float32)
+            # Si no hay cajas válidas, creamos tensores vacíos
+            if not boxes:
                 boxes = torch.zeros((0, 4), dtype=torch.float32)
                 labels = torch.zeros((0,), dtype=torch.int64)
-            else:
-                # Apply transforms
-                transformed = self.transforms(image=img, bboxes=boxes, class_labels=labels)
-                img = transformed['image']
-                boxes = torch.tensor(transformed['bboxes'], dtype=torch.float32)
-                labels = torch.tensor(transformed['class_labels'], dtype=torch.int64)
 
+            # Empaquetamos en un diccionario para la transformación
+            sample = {
+                'image': img,
+                'bboxes': boxes,
+                'class_labels': labels
+            }
+
+            # Aplicamos las transformaciones de Albumentations
+            if self.transforms:
+                transformed = self.transforms(**sample)
+                img = transformed['image']
+                boxes = torch.as_tensor(transformed['bboxes'], dtype=torch.float32)
+                labels = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)
+
+            # Creamos el diccionario de salida "target"
             target = {
                 'bbox': boxes,
                 'cls': labels,
-                'img_size': torch.tensor([img.shape[1], img.shape[2]]),
+                'img_size': torch.tensor([img.shape[1], img.shape[2]]), # Usamos el tamaño después de transformar
                 'img_scale': torch.tensor(1.0)
             }
 
             return img, target
 
         except Exception as e:
-            print(f"Error processing image {img_path if 'img_path' in locals() else 'unknown'}: {str(e)}")
-            # Return a dummy sample
+            print(f"Error procesando el ID de imagen {img_id}: {str(e)}")
+            # Devolvemos una muestra vacía para no detener el entrenamiento
             img = torch.zeros((3, image_size, image_size), dtype=torch.float32)
             boxes = torch.zeros((0, 4), dtype=torch.float32)
             labels = torch.zeros((0,), dtype=torch.int64)
@@ -195,7 +205,22 @@ class EfficientDetLightningModel(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.model.parameters(), lr=1e-4)
-        return optimizer
+    
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode='min',      # Reducirá el LR cuando la 'val_loss' deje de mejorar
+            factor=0.1,      # Reduce el LR en un factor de 10
+            patience=5,      # Número de épocas sin mejora antes de reducir el LR
+            #verbose=True
+        )
+        
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val_loss", # Métrica a monitorear
+            },
+        }
 
 # ================================
 # DATA LOADERS
@@ -218,21 +243,21 @@ val_dataset = COCODetectionDataset(
 
 train_loader = DataLoader(
     train_dataset, 
-    batch_size=4, 
+    batch_size=16, 
     shuffle=True, 
     collate_fn=collate_fn,
-    num_workers=2,
-    pin_memory=True,
+    num_workers=4,
+    pin_memory=torch.cuda.is_available(),
     persistent_workers=True  # Add this for better performance
 )
 
 val_loader = DataLoader(
     val_dataset, 
-    batch_size=4, 
+    batch_size=16, 
     shuffle=False, 
     collate_fn=collate_fn,
-    num_workers=2,
-    pin_memory=True,
+    num_workers=4,
+    pin_memory=torch.cuda.is_available(),
     persistent_workers=True  # Add this for better performance
 )
 
@@ -261,19 +286,21 @@ if __name__ == '__main__':
     import multiprocessing
     multiprocessing.freeze_support()
     
+    torch.set_float32_matmul_precision('high') # tarjeta de video
+
     # Initialize the model
     pl_model = EfficientDetLightningModel(model)
 
     # Configure trainer
     trainer = Trainer(
-        max_epochs=2,
+        max_epochs=10,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=1,
         log_every_n_steps=5,
         check_val_every_n_epoch=1,
         num_sanity_val_steps=0,  # Disable sanity check to see real errors
         precision=16,  # Try mixed precision
-        deterministic=True  # For reproducibility
+        deterministic=False  # For reproducibility
     )
 
     # Start training
@@ -287,7 +314,7 @@ if __name__ == '__main__':
     torch.save(pl_model.state_dict(), os.path.join(model_dir, 'efficientdet_model.pth'))
 
     # O guardar solo los pesos del modelo
-    torch.save(model.state_dict(), os.path.join(model_dir, 'efficientdet_weights.pth'))
+    torch.save(model.model.state_dict(), os.path.join(model_dir, 'efficientdet_weights.pth'))
 
     # También puedes guardar el checkpoint de Lightning completo
     trainer.save_checkpoint(os.path.join(model_dir, 'lightning_checkpoint.ckpt'))

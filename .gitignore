@@ -9,3 +9,8 @@ lightning_logs/
 instalaciones/
 
 *.pth
+
+# Ignorar archivos de checkpoints de PyTorch
+*.ckpt
+
+ssd_mobilenet/

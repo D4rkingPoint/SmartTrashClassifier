@@ -34,7 +34,7 @@ else:
 
 # ====================== CONFIGURACIÓN ======================
 CLASSES = ['Trash', 'Metal', 'Plastic', 'Glass', 'Cardboard', 'Paper', 'Compostable']
-IMG_SIZE = 300
+IMG_SIZE = 512
 BATCH_SIZE = 32
 EPOCHS = 20
 

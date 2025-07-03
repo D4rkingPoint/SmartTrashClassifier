@@ -29,17 +29,25 @@ def preprocess(image):
 # ================================
 # CARGA DEL MODELO ENTRENADO
 # ================================
-def load_model(weights_path='efficientdet_weights.pth'):
+def load_model(weights_path='model_efficientDet/efficientdet_weights.pth'):
     config = get_efficientdet_config('tf_efficientdet_d0')
     config.num_classes = num_classes
     config.image_size = (image_size, image_size)
 
+    # 1. Creamos la arquitectura base del modelo
     net = EfficientDet(config, pretrained_backbone=False)
-    net.class_net = HeadNet(config, num_outputs=num_classes)
-    model = DetBenchPredict(net)
 
-    model.load_state_dict(torch.load(weights_path, map_location=device))
+    # 2. Cargamos los pesos directamente en la arquitectura base 'net'
+    #    Estos pesos ya incluyen la 'class_net' entrenada.
+    net.load_state_dict(torch.load(weights_path, map_location=device))
+    
+    # 3. ¡ELIMINAMOS ESTA LÍNEA! No reinicies la cabeza de clasificación.
+    #net.class_net = HeadNet(config, num_outputs=num_classes)  #<-- ESTA LÍNEA SE VA
+    
+    # 4. Envolvemos el 'net' ya cargado con la envoltura de predicción
+    model = DetBenchPredict(net)
     model.eval().to(device)
+    
     return model
 
 # ================================
