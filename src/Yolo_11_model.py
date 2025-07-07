@@ -3,7 +3,7 @@ from ultralytics import YOLO
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
 
-CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'trash', 'compostable']
+CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'compostable']
 
 # Mapeo de color (BGR OpenCV) y nombre del contenedor
 CLASS_COLORS = {
@@ -30,7 +30,7 @@ CLASS_INFO = {
 FONT_PATH = "arial.ttf"  # Asegúrate que esta fuente exista, o usa otra
 FONT_SIZE = 18
 
-model = YOLO('../runs/Entrenamiento_yolov11/train2/weights/best.pt')
+model = YOLO('../runs/Entrenamiento_yolov11_new/train12/weights/best.pt') # ../runs/Entrenamiento_yolov11_new/train12/weights/best.pt
 cap = cv2.VideoCapture(0)
 
 while cap.isOpened():
@@ -43,11 +43,31 @@ while cap.isOpened():
 
     for result in results.boxes:
         cls_id = int(result.cls[0])
+        
+        # --- Obtener la confianza ---
+        conf = float(result.conf[0])
+
+        # --- Obtener las coordenadas y encoger la caja (como antes) ---
         x1, y1, x2, y2 = map(int, result.xyxy[0])
+        shrink_factor = 0.30
+        width = x2 - x1
+        height = y2 - y1
+        new_x1 = int(x1 + width * shrink_factor / 2)
+        new_y1 = int(y1 + height * shrink_factor / 2)
+        new_x2 = int(x2 - width * shrink_factor / 2)
+        new_y2 = int(y2 - height * shrink_factor / 2)
+
+        # --- Crear la etiqueta con la clase y la confianza ---
         label = CLASSES[cls_id]
+        label_with_conf = f"{label} {conf:.2f}"  # Formato: "plastic 0.87"
+        
+        # --- Dibujar en el frame ---
         color_bgr, _ = CLASS_COLORS.get(label, ((255, 255, 255), ""))
-        cv2.rectangle(frame, (x1, y1), (x2, y2), color_bgr, 2)
-        cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+        cv2.rectangle(frame, (new_x1, new_y1), (new_x2, new_y2), color_bgr, 2)
+        
+        # Usar la nueva etiqueta que incluye la confianza
+        cv2.putText(frame, label_with_conf, (new_x1, new_y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+        
         detected_classes.add(label)
 
         # Convertir frame a PIL para dibujar texto

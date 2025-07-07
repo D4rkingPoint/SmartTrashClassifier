@@ -53,7 +53,7 @@ def load_model(weights_path='model_efficientDet/efficientdet_weights.pth'):
 # ================================
 # DIBUJAR CAJAS Y ETIQUETAS
 # ================================
-def draw_predictions(frame, boxes, scores, labels, threshold=0.3):
+def draw_predictions(frame, boxes, scores, labels, threshold=0.2):
     for box, score, label in zip(boxes, scores, labels):
         if score >= threshold and 0 <= label < len(CLASSES):  # ✅ validación segura
             x1, y1, x2, y2 = map(int, box)

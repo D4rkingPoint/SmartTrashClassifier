@@ -9,7 +9,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 # ================================
 # CONFIGURACIÓN
 # ================================
-CLASSES = ['Trash', 'Metal', 'Plastic', 'Glass', 'Cardboard', 'Paper', 'Compostable']
+CLASSES = [ 'Metal', 'Plastic', 'Glass', 'Cardboard', 'Paper', 'Compostable']
 num_classes = len(CLASSES)
 image_size = 512
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

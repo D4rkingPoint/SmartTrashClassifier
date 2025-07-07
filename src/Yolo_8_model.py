@@ -3,7 +3,7 @@ from ultralytics import YOLO
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
 
-CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'trash', 'compostable']
+CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'compostable']
 
 # Mapeo de color (BGR OpenCV) y nombre del contenedor
 CLASS_COLORS = {
@@ -30,7 +30,7 @@ CLASS_INFO = {
 FONT_PATH = "arial.ttf"  # Asegúrate que esta fuente exista, o usa otra
 FONT_SIZE = 18
 
-model = YOLO('../runs/Entrenamiento_yolov8/train2/weights/best.pt')
+model = YOLO('../runs/Entrenamiento_yolov8/train3/weights/best.pt')
 cap = cv2.VideoCapture(0)
 
 while cap.isOpened():

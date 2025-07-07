@@ -14,8 +14,8 @@ os.chdir(DATASET_DIR)
 if not os.path.exists(DATASET_PATH):
     from roboflow import Roboflow
     rf = Roboflow(api_key="RdgAUhTbcOD8jUWNIy9A")
-    project = rf.workspace("proyectos-qu6sq").project("dataset-para-proyecto-vision")
-    version = project.version(2)
+    project = rf.workspace("proyectos-qu6sq").project("clasificacion-de-resuidos")
+    version = project.version(4)
     dataset = version.download("yolov8", location=DATASET_PATH)                             
     dataset_path = dataset.location  # <-- Definimos la ruta cuando se descarga
 else:
@@ -39,6 +39,7 @@ subprocess.run([
     "epochs=30",
     "imgsz=640",
     "device=0",
+    "batch=32",
     "plots=True",
     f"project={train_path}/Entrenamiento_yolov8",  # Cambia esto por el nombre deseado
 ])

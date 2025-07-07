@@ -17,7 +17,7 @@ from pytorch_lightning.callbacks import TQDMProgressBar
 # ================================
 HOME = os.getcwd()
 DATASET_DIR = os.path.join(HOME, "dataset")
-DATASET_NAME = "dataset-para-proyecto-vision-efficientdet"
+DATASET_NAME = "dataset-para-proyecto-vision-faster-rcnn"
 DATASET_PATH = os.path.join(DATASET_DIR, DATASET_NAME)
 
 os.makedirs(DATASET_DIR, exist_ok=True)
@@ -25,8 +25,8 @@ os.chdir(DATASET_DIR)
 
 if not os.path.exists(DATASET_PATH):
     rf = Roboflow(api_key="RdgAUhTbcOD8jUWNIy9A")
-    project = rf.workspace("proyectos-qu6sq").project("dataset-para-proyecto-vision")
-    version = project.version(3)
+    project = rf.workspace("proyectos-qu6sq").project("clasificacion-de-resuidos")
+    version = project.version(4)
     dataset = version.download("coco", location=DATASET_PATH)
     dataset_path = dataset.location
 else:
@@ -35,7 +35,7 @@ else:
 
 os.chdir(HOME)
 
-CLASSES = ['Trash', 'Metal', 'Plastic', 'Glass', 'Cardboard', 'Paper', 'Compostable']
+CLASSES = ['Metal', 'Plastic', 'Glass', 'Cardboard', 'Paper', 'Compostable']
 num_classes = len(CLASSES)
 image_size = 512
 
@@ -272,7 +272,7 @@ val_dataset = COCODetectionDataset(
 
 train_loader = DataLoader(
     train_dataset,
-    batch_size=2,
+    batch_size=8,
     shuffle=True,
     collate_fn=collate_fn,
     num_workers=0,
@@ -282,7 +282,7 @@ train_loader = DataLoader(
 
 val_loader = DataLoader(
     val_dataset, 
-    batch_size=2,  # Mismo tamaño que train para consistencia
+    batch_size=8,  # Mismo tamaño que train para consistencia
     shuffle=False, 
     collate_fn=collate_fn,
     num_workers=0,
@@ -314,7 +314,7 @@ if __name__ == '__main__':
         enable_progress_bar=True,
         enable_model_summary=False,
         logger=True,
-        max_epochs=10,
+        max_epochs=30,
         accelerator="auto"
     )
 
