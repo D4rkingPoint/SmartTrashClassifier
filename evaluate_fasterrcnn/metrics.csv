@@ -1,0 +1,2 @@
+Modelo,mAP@0.5 (%),Precision (%),Recall (%),F1 Score (%)
+Faster R-CNN,46.59,46.59,13.15,20.51

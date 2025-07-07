@@ -30,7 +30,7 @@ CLASS_INFO = {
 FONT_PATH = "arial.ttf"  # Asegúrate que esta fuente exista, o usa otra
 FONT_SIZE = 18
 
-model = YOLO('../runs/Entrenamiento_yolov11_new/train12/weights/best.pt') # ../runs/Entrenamiento_yolov11_new/train12/weights/best.pt
+model = YOLO('../runs/Entrenamiento_yolov11_new/train13/weights/best.pt') # ../runs/Entrenamiento_yolov11_new/train12/weights/best.pt
 cap = cv2.VideoCapture(0)
 
 while cap.isOpened():

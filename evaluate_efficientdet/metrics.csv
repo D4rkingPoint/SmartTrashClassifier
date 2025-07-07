@@ -1,0 +1,2 @@
+Modelo,mAP@0.5 (%),Precision (%),Recall (%),F1 Score (%)
+EfficientDet,11.09,11.09,20.14,14.3

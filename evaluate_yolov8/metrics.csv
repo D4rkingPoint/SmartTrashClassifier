@@ -1,0 +1,2 @@
+Modelo,mAP@0.5 (%),Precision (%),Recall (%),F1 Score (%)
+YOLOv8,83.08,83.08,68.36,75.0

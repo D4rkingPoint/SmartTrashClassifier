@@ -38,7 +38,7 @@ subprocess.run([
     "mode=train",
     "model=yolo11s.pt",       #runs/Entrenamiento_yolov11/train7/weights/last.pt o yolo11s.pt
     f"data={dataset_path}/data.yaml",
-    "epochs=20",
+    "epochs=30",
     "imgsz=640",
     "device=0",
     "batch=32",
