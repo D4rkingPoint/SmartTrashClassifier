@@ -9,7 +9,7 @@ from effdet.efficientdet import HeadNet
 # ================================
 # CONFIGURACIÓN GENERAL
 # ================================
-CLASSES = ['Trash', 'Metal', 'Plastic', 'Glass', 'Cardboard', 'Paper', 'Compostable']
+CLASSES = ['Trash', 'Compostable',  'cardboard', 'glass', 'metal', 'paper', 'plastic']
 num_classes = len(CLASSES)
 image_size = 512
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

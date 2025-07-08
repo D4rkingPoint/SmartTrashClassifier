@@ -13,7 +13,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 # ==== CONFIGURACION ====
-CLASSES = ['Trash-JOLd', 'Compostable', 'Cardboard', 'Glass', 'Metal', 'Paper', 'Plastic']
+CLASSES = ['Trash-JOLd','Compostable',  'cardboard', 'glass', 'metal', 'paper', 'plastic']
 NUM_CLASSES = len(CLASSES)
 IMG_SIZE = 512
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

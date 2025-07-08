@@ -249,6 +249,6 @@ if __name__ == "__main__":
     MODEL_PATH = find_model()
     if MODEL_PATH:
         tester = YOLOTester(MODEL_PATH)
-        tester.test_webcam(conf_threshold=0.5)
+        tester.test_webcam(conf_threshold=0.4)
     else:
         print("\nEjecución detenida. Por favor, asegúrate de que la ruta al modelo (.pt) es correcta.")

@@ -18,7 +18,7 @@ SAVE_DIR = "evaluate_yolov8"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 # Clases (asegúrate que coinciden con tus IDs COCO)
-CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'compostable']
+CLASSES = ['Compostable',  'cardboard', 'glass', 'metal', 'paper', 'plastic']
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = YOLO(WEIGHTS_PATH)

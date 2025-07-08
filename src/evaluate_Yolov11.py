@@ -12,13 +12,13 @@ from ultralytics import YOLO
 DATASET_PATH = "dataset/dataset-para-proyecto-vision-Efficientdet/valid"  # Ajusta a tu path
 ANNOTATIONS_PATH = os.path.join(DATASET_PATH, "_annotations.coco.json")
 IMAGES_DIR = DATASET_PATH
-WEIGHTS_PATH = "runs/Entrenamiento_yolov11_new/train13/weights/best.pt"  # Ajusta aquí
+WEIGHTS_PATH = "runs/Entrenamiento_yolov11_new/train14/weights/best.pt"  # Ajusta aquí
 
 SAVE_DIR = "evaluate_yolov11"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 # Clases (asegúrate que coinciden con tus IDs COCO)
-CLASSES = ['metal', 'paper', 'plastic', 'glass', 'cardboard', 'compostable']
+CLASSES = ['Compostable',  'cardboard', 'glass', 'metal', 'paper', 'plastic']
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = YOLO(WEIGHTS_PATH)
@@ -56,7 +56,7 @@ for img_id in tqdm(coco.getImgIds(), desc="Inferencia YOLOv11"):
         })
 
 # Guardar resultados JSON para COCOeval
-pred_path = os.path.join(SAVE_DIR, "yolov11_predictions.json")
+pred_path = os.path.join(SAVE_DIR, "yolov11_predictions_dataset_final.json")
 with open(pred_path, "w") as f:
     json.dump(results, f)
 
@@ -74,7 +74,7 @@ f1 = round(2 * precision * recall / (precision + recall + 1e-8), 2)
 
 df = pd.DataFrame([["YOLOv11", ap50, precision, recall, f1]],
                   columns=["Modelo", "mAP@0.5 (%)", "Precision (%)", "Recall (%)", "F1 Score (%)"])
-csv_path = os.path.join(SAVE_DIR, "metrics.csv")
+csv_path = os.path.join(SAVE_DIR, "metrics_dasaset_final.csv")
 df.to_csv(csv_path, index=False)
 
 print(f"Métricas guardadas en {csv_path}")
