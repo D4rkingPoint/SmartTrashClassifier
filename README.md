@@ -11,7 +11,7 @@ El análisis comparativo se basa en métricas estándar como mAP, Precisión, Re
 
 ## Enlace Dataset
 
-[Dataset en roboflow](https://universe.roboflow.com/proyectos-qu6sq/clasificacion-de-resuidos)
+[Dataset en roboflow](https://universe.roboflow.com/proyectos-qu6sq/clasificacion-de-residuos-rovwx)
 
 [Enlace aplicación móvil](https://github.com/D4rkingPoint/SmartTrashClassifier_App/tree/main)
 
