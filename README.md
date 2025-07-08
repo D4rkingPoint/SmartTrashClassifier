@@ -8,7 +8,7 @@ Proyecto_IPD441
 
 ## Enlace Dataset
 
-*Aqui va el link del dataset*
+[Dataset en roboflow](https://universe.roboflow.com/proyectos-qu6sq/clasificacion-de-resuidos)
 
 ## Modelos a comparar
 
@@ -16,7 +16,6 @@ Proyecto_IPD441
 - Yolov8
 - EfficientDet
 - Faster R-CNN
-- MobileNet SSD
 
 ## Métricas a comparar:
 
@@ -24,7 +23,6 @@ Proyecto_IPD441
 - Precision
 - Recall
 - F1-Score
-- FPS (cuadros por segundo) para ver cuál es más rápido en inferencia
 
 ## Instalaciones necesarias
 
