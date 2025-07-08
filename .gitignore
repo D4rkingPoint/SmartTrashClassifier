@@ -2,7 +2,7 @@
 dataset/
 
 # archivos .pt
-#*.pt
+*.pt
 
 lightning_logs/
 
