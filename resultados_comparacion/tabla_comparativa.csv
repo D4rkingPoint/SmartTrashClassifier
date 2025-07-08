@@ -1,0 +1,5 @@
+Modelo,mAP@0.5 (%),Precision (%),Recall (%),F1 Score (%)
+YOLOv11,85.92,85.92,69.38,76.77
+YOLOv8,83.08,83.08,68.36,75.0
+Faster R-CNN,46.59,46.59,13.15,20.51
+EfficientDet,11.09,11.09,20.14,14.3
