@@ -16,7 +16,7 @@ if not os.path.exists(DATASET_PATH):
     from roboflow import Roboflow
     rf = Roboflow(api_key="RdgAUhTbcOD8jUWNIy9A")
     project = rf.workspace("proyectos-qu6sq").project("clasificacion-de-resuidos")
-    version = project.version(4)
+    version = project.version(5)
     dataset = version.download("yolov11", location=DATASET_PATH)         
     dataset_path = dataset.location  # <-- Definimos la ruta cuando se descarga
 else:
