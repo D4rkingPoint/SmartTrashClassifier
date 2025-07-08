@@ -36,15 +36,17 @@ El análisis comparativo se basa en métricas estándar como mAP, Precisión, Re
 ### Yolo
 
 ```
-pip install ultralytics
+pip install ultralytics opencv-python-headless Pillow numpy
 ```
 
 ### Fastet R-CNN
 
 ```
-pip install torch torchvision pycocotools
+pip install torch torchvision opencv-python-headless pandas tqdm pycocotools albumentations
 ```
 
 ### EfficientDet
 
-- pip install torch torchvision effdet albumentations pytorch-lightning
+```
+pip install torch torchvision effdet opencv-python-headless pandas tqdm pycocotools albumentations
+```
